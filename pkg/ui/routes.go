@@ -7,6 +7,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var (
+	UIOffline = "dynamic"
+)
+
 func New(path string) http.Handler {
 	vue := NewUIHandler(&Options{
 		Path: func() string {
@@ -14,6 +18,9 @@ func New(path string) http.Handler {
 				return defaultPath
 			}
 			return path
+		},
+		Offline: func() string {
+			return UIOffline
 		},
 	})
 
