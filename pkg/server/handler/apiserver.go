@@ -48,9 +48,9 @@ func New(cfg *rest.Config, sf schema.Factory, authMiddleware auth.Middleware, ne
 		APIRoot:     w(a.apiHandler(apiRoot)),
 	}
 	if routerFunc == nil {
-		return a.server, router.Routes(handlers), nil
+		return a.server, rewriteLocalCluster(router.Routes(handlers)), nil
 	}
-	return a.server, routerFunc(handlers), nil
+	return a.server, rewriteLocalCluster(routerFunc(handlers)), nil
 }
 
 type apiServer struct {
