@@ -5,10 +5,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-)
-
-var (
-	UIOffline = "dynamic"
+	"github.com/rancher/steve/pkg/version"
 )
 
 func New(path string) http.Handler {
@@ -20,7 +17,13 @@ func New(path string) http.Handler {
 			return path
 		},
 		Offline: func() string {
-			return UIOffline
+			if path != "" {
+				return "true"
+			}
+			return "dynamic"
+		},
+		ReleaseSetting: func() bool {
+			return version.IsRelease()
 		},
 	})
 

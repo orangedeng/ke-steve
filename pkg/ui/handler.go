@@ -5,12 +5,14 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"path/filepath"
 	"sync"
 
 	"github.com/rancher/apiserver/pkg/middleware"
 	"github.com/sirupsen/logrus"
+)
+
+const (
+	defaultPath = "./ui"
 )
 
 var (
@@ -22,10 +24,6 @@ var (
 			},
 		},
 	}
-)
-
-const (
-	defaultPath = "./ui"
 )
 
 type StringSetting func() string
@@ -104,17 +102,6 @@ func NewUIHandler(opts *Options) *Handler {
 	return h
 }
 
-func (u *Handler) canDownload(url string) bool {
-	u.downloadOnce.Do(func() {
-		if err := serveIndex(ioutil.Discard, url); err == nil {
-			u.downloadSuccess = true
-		} else {
-			logrus.Errorf("Failed to download %s, falling back to packaged UI", url)
-		}
-	})
-	return u.downloadSuccess
-}
-
 func (u *Handler) path() (path string, isURL bool) {
 	switch u.offlineSetting() {
 	case "dynamic":
@@ -132,37 +119,15 @@ func (u *Handler) path() (path string, isURL bool) {
 	}
 }
 
-func (u *Handler) ServeAsset() http.Handler {
-	return u.middleware(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		http.FileServer(http.Dir(u.pathSetting())).ServeHTTP(rw, req)
-	}))
-}
-
-func (u *Handler) ServeFaviconDashboard() http.Handler {
-	return u.middleware(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		http.FileServer(http.Dir(filepath.Join(u.pathSetting(), "dashboard"))).ServeHTTP(rw, req)
-	}))
-}
-
-func (u *Handler) IndexFileOnNotFound() http.Handler {
-	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		// we ignore directories here because we want those to come from the CDN when running in that mode
-		if stat, err := os.Stat(filepath.Join(u.pathSetting(), req.URL.Path)); err == nil && !stat.IsDir() {
-			u.ServeAsset().ServeHTTP(rw, req)
+func (u *Handler) canDownload(url string) bool {
+	u.downloadOnce.Do(func() {
+		if err := serveIndex(ioutil.Discard, url); err == nil {
+			u.downloadSuccess = true
 		} else {
-			u.IndexFile().ServeHTTP(rw, req)
+			logrus.Errorf("Failed to download %s, falling back to packaged UI", url)
 		}
 	})
-}
-
-func (u *Handler) IndexFile() http.Handler {
-	return u.indexMiddleware(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if path, isURL := u.path(); isURL {
-			_ = serveIndex(rw, path)
-		} else {
-			http.ServeFile(rw, req, filepath.Join(path, "index.html"))
-		}
-	}))
+	return u.downloadSuccess
 }
 
 func serveIndex(resp io.Writer, url string) error {
