@@ -19,7 +19,7 @@ var (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "steve"
+	app.Name = "kube-explorer"
 	app.Version = version.FriendlyVersion()
 	app.Usage = ""
 	app.Flags = append(
