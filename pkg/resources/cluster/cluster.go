@@ -3,12 +3,14 @@ package cluster
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/rancher/apiserver/pkg/store/empty"
 	"github.com/rancher/apiserver/pkg/types"
 	detector "github.com/rancher/kubernetes-provider-detector"
 	"github.com/rancher/steve/pkg/accesscontrol"
 	"github.com/rancher/steve/pkg/attributes"
+	"github.com/rancher/steve/pkg/podimpersonation"
 	steveschema "github.com/rancher/steve/pkg/schema"
 	"github.com/rancher/steve/pkg/stores/proxy"
 	"github.com/rancher/wrangler/pkg/genericcondition"
@@ -19,7 +21,19 @@ import (
 	"k8s.io/client-go/discovery"
 )
 
+const (
+	shellPodImage = "rancher/shell:v0.1.6"
+	shellPodNS    = "kube-system"
+)
+
 func Register(ctx context.Context, apiSchemas *types.APISchemas, cg proxy.ClientGetter, schemaFactory steveschema.Factory) {
+	// K-EXPLORER
+	shell := &shell{
+		cg:           cg,
+		namespace:    shellPodNS,
+		impersonator: podimpersonation.New("shell", cg, time.Hour, func() string { return shellPodImage }),
+	}
+
 	apiSchemas.InternalSchemas.TypeName("management.cattle.io.cluster", Cluster{})
 
 	apiSchemas.MustImportAndCustomize(&ApplyInput{}, nil)
@@ -56,6 +70,10 @@ func Register(ctx context.Context, apiSchemas *types.APISchemas, cg proxy.Client
 				Input:  "applyInput",
 				Output: "applyOutput",
 			},
+		}
+		// K-EXPLORER
+		schema.LinkHandlers = map[string]http.Handler{
+			"shell": shell,
 		}
 	})
 }

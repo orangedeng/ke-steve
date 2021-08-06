@@ -1,6 +1,6 @@
 module github.com/rancher/steve
 
-go 1.13
+go 1.16
 
 replace (
 	github.com/crewjam/saml => github.com/rancher/saml v0.0.0-20180713225824-ce1532152fde
