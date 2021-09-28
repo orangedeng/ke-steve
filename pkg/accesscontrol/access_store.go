@@ -8,6 +8,7 @@ import (
 	"time"
 
 	v1 "github.com/rancher/wrangler/pkg/generated/controllers/rbac/v1"
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/cache"
 	"k8s.io/apiserver/pkg/authentication/user"
 )
@@ -40,16 +41,21 @@ func NewAccessStore(ctx context.Context, cacheResults bool, rbac v1.Interface) *
 }
 
 func (l *AccessStore) AccessFor(user user.Info) *AccessSet {
+	logrus.Infof("******* AccessFor user: %+v", user)
 	var cacheKey string
 	if l.cache != nil {
+		logrus.Infof("******* AccessFor cache size: %d", len(l.cache.Keys()))
 		cacheKey = l.CacheKey(user)
+		logrus.Infof("******* AccessFor try cache via key: %s", cacheKey)
 		val, ok := l.cache.Get(cacheKey)
 		if ok {
+			logrus.Infof("******* AccessFor got cache via key: %s", cacheKey)
 			as, _ := val.(*AccessSet)
 			return as
 		}
 	}
 
+	logrus.Info("******* AccessFor generate results")
 	result := l.users.get(user.GetName())
 	for _, group := range user.GetGroups() {
 		result.Merge(l.groups.get(group))
@@ -58,6 +64,7 @@ func (l *AccessStore) AccessFor(user user.Info) *AccessSet {
 	if l.cache != nil {
 		result.ID = cacheKey
 		l.cache.Add(cacheKey, result, 24*time.Hour)
+		logrus.Infof("******* AccessFor add cache to key: %s", cacheKey)
 	}
 
 	return result
