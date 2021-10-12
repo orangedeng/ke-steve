@@ -6,6 +6,7 @@ import (
 
 	rbac "github.com/rancher/wrangler/pkg/generated/controllers/rbac/v1"
 	"github.com/rancher/wrangler/pkg/kv"
+	"github.com/sirupsen/logrus"
 	rbacv1 "k8s.io/api/rbac/v1"
 )
 
@@ -30,6 +31,7 @@ func (r *roleRevisionIndex) roleRevision(namespace, name string) string {
 }
 
 func (r *roleRevisionIndex) onClusterRoleChanged(key string, cr *rbacv1.ClusterRole) (role *rbacv1.ClusterRole, err error) {
+	logrus.Info("******* onClusterRoleChanged **********")
 	if cr == nil {
 		r.roleRevisions.Delete(roleKey{
 			name: key,
@@ -43,6 +45,7 @@ func (r *roleRevisionIndex) onClusterRoleChanged(key string, cr *rbacv1.ClusterR
 }
 
 func (r *roleRevisionIndex) onRoleChanged(key string, cr *rbacv1.Role) (role *rbacv1.Role, err error) {
+	logrus.Info("******* onRoleChanged **********")
 	if cr == nil {
 		namespace, name := kv.Split(key, "/")
 		r.roleRevisions.Delete(roleKey{
