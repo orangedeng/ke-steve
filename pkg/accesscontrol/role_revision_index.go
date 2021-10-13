@@ -31,7 +31,7 @@ func (r *roleRevisionIndex) roleRevision(namespace, name string) string {
 }
 
 func (r *roleRevisionIndex) onClusterRoleChanged(key string, cr *rbacv1.ClusterRole) (role *rbacv1.ClusterRole, err error) {
-	logrus.Info("******* onClusterRoleChanged **********")
+	logrus.Infof("******* onClusterRoleChanged: %s **********", key)
 	if cr == nil {
 		r.roleRevisions.Delete(roleKey{
 			name: key,
@@ -45,7 +45,7 @@ func (r *roleRevisionIndex) onClusterRoleChanged(key string, cr *rbacv1.ClusterR
 }
 
 func (r *roleRevisionIndex) onRoleChanged(key string, cr *rbacv1.Role) (role *rbacv1.Role, err error) {
-	logrus.Info("******* onRoleChanged **********")
+	logrus.Infof("******* onRoleChanged: %s **********", key)
 	if cr == nil {
 		namespace, name := kv.Split(key, "/")
 		r.roleRevisions.Delete(roleKey{
