@@ -21,6 +21,7 @@ import (
 	"github.com/rancher/steve/pkg/server/handler"
 	"github.com/rancher/steve/pkg/server/router"
 	"github.com/rancher/steve/pkg/summarycache"
+	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/rest"
 )
 
@@ -128,6 +129,7 @@ func setup(ctx context.Context, server *Server) error {
 
 	asl := server.AccessSetLookup
 	if asl == nil {
+		logrus.Info("*********** Register accessstore by steve")
 		asl = accesscontrol.NewAccessStore(ctx, true, server.controllers.RBAC)
 	}
 
