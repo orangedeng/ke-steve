@@ -17,7 +17,7 @@ type roleRevisionIndex struct {
 func newRoleRevision(ctx context.Context, rbac rbac.Interface) *roleRevisionIndex {
 	r := &roleRevisionIndex{}
 	rbac.Role().OnChange(ctx, "role-revision-indexer", r.onRoleChanged)
-	rbac.ClusterRole().OnChange(ctx, "role-revision-indexer", r.onClusterRoleChanged)
+	rbac.ClusterRole().OnChange(ctx, "clusterrole-revision-indexer", r.onClusterRoleChanged)
 	return r
 }
 
