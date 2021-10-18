@@ -50,7 +50,7 @@ func (l *AccessStore) AccessFor(user user.Info) *AccessSet {
 		val, ok := l.cache.Get(cacheKey)
 		if ok {
 			logrus.Infof("******* AccessFor got cache via key: %s, user: %+v", cacheKey, user)
-			logrus.Infof("******* cache key: %s, %+v", cacheKey, l.cache)
+			//logrus.Infof("******* cache key: %s, %+v", cacheKey, l.cache)
 			as, _ := val.(*AccessSet)
 			return as
 		}
@@ -64,8 +64,10 @@ func (l *AccessStore) AccessFor(user user.Info) *AccessSet {
 
 	if l.cache != nil {
 		result.ID = cacheKey
-		l.cache.Add(cacheKey, result, 24*time.Hour)
-		logrus.Infof("******* AccessFor add cache to key: %s, expireTime: %s", cacheKey, time.Now().Add(24*time.Hour))
+		//l.cache.Add(cacheKey, result, 24*time.Hour)
+		//logrus.Infof("******* AccessFor add cache to key: %s, expireTime: %s", cacheKey, time.Now().Add(24*time.Hour))
+		l.cache.Add(cacheKey, result, 1*time.Minute)
+		logrus.Infof("******* AccessFor add cache to key: %s, expireTime: %s", cacheKey, time.Now().Add(1*time.Minute))
 	}
 
 	return result
