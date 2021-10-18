@@ -55,7 +55,7 @@ func (l *AccessStore) AccessFor(user user.Info) *AccessSet {
 		}
 	}
 
-	logrus.Info("******* AccessFor generate results")
+	logrus.Info("******************************** AccessFor generate results *************************")
 	result := l.users.get(user.GetName())
 	for _, group := range user.GetGroups() {
 		result.Merge(l.groups.get(group))
@@ -64,7 +64,7 @@ func (l *AccessStore) AccessFor(user user.Info) *AccessSet {
 	if l.cache != nil {
 		result.ID = cacheKey
 		l.cache.Add(cacheKey, result, 24*time.Hour)
-		logrus.Infof("******* AccessFor add cache to key: %s", cacheKey)
+		logrus.Infof("******* AccessFor add cache to key: %s, expireTime: %s", cacheKey, time.Now().Add(24*time.Hour))
 	}
 
 	return result
