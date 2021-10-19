@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	v1 "github.com/rancher/wrangler/pkg/generated/controllers/rbac/v1"
+	"github.com/sirupsen/logrus"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -79,6 +80,7 @@ func (p *policyRuleIndex) addRolesToHash(digest hash.Hash, subjectName string) {
 		digest.Write([]byte(crb.RoleRef.Name))
 		digest.Write([]byte(p.revisions.roleRevision("", crb.RoleRef.Name)))
 		digest.Write(null)
+		logrus.Infof("^^^^^^ addRolesToHash ClusterRoleBindings %s, %s, %s", subjectName, crb.RoleRef.Name, p.revisions.roleRevision("", crb.RoleRef.Name))
 	}
 
 	for _, rb := range p.getRoleBindings(subjectName) {
@@ -88,10 +90,12 @@ func (p *policyRuleIndex) addRolesToHash(digest hash.Hash, subjectName string) {
 			digest.Write([]byte(rb.Namespace))
 			digest.Write([]byte(p.revisions.roleRevision(rb.Namespace, rb.RoleRef.Name)))
 			digest.Write(null)
+			logrus.Infof("^^^^^^ addRolesToHash Role %s, %s-%s, %s", subjectName, rb.RoleRef.Name, rb.Namespace, p.revisions.roleRevision(rb.Namespace, rb.RoleRef.Name))
 		case "ClusterRole":
 			digest.Write([]byte(rb.RoleRef.Name))
 			digest.Write([]byte(rb.Namespace))
 			digest.Write([]byte(p.revisions.roleRevision(rb.Namespace, rb.RoleRef.Name)))
+			logrus.Infof("^^^^^^ addRolesToHash ClusterRole %s, %s-%s, %s", subjectName, rb.RoleRef.Name, rb.Namespace, p.revisions.roleRevision(rb.Namespace, rb.RoleRef.Name))
 			digest.Write(null)
 		}
 	}
