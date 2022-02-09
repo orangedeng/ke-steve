@@ -2,7 +2,9 @@ package cluster
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/rancher/apiserver/pkg/store/empty"
@@ -19,6 +21,10 @@ import (
 	schema2 "k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/discovery"
+)
+
+var (
+	CurrentKubeContext string
 )
 
 const (
@@ -160,7 +166,7 @@ func (s *Store) getLocal() types.APIObject {
 				Name: "local",
 			},
 			Spec: Spec{
-				DisplayName: "Local Cluster",
+				DisplayName: getDisplayNameWithContext(),
 				Internal:    true,
 			},
 			Status: Status{
@@ -206,4 +212,11 @@ func (s *Store) Watch(apiOp *types.APIRequest, schema *types.APISchema, w types.
 	}()
 
 	return result, nil
+}
+
+func getDisplayNameWithContext() string {
+	if CurrentKubeContext != "" {
+		return fmt.Sprintf("%s Cluster", strings.Title(CurrentKubeContext))
+	}
+	return "Local Cluster"
 }

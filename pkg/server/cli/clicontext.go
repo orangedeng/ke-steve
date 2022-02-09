@@ -5,6 +5,7 @@ import (
 
 	steveauth "github.com/rancher/steve/pkg/auth"
 	authcli "github.com/rancher/steve/pkg/auth/cli"
+	"github.com/rancher/steve/pkg/resources/cluster"
 	"github.com/rancher/steve/pkg/server"
 	"github.com/rancher/steve/pkg/ui"
 	"github.com/rancher/wrangler/pkg/kubeconfig"
@@ -47,6 +48,9 @@ func (c *Config) ToServer(ctx context.Context) (*server.Server, error) {
 			return nil, err
 		}
 	}
+
+	// K-EXPLORER
+	cluster.CurrentKubeContext = c.Context
 
 	return server.New(ctx, restConfig, &server.Options{
 		AuthMiddleware: auth,
