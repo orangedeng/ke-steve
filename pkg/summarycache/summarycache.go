@@ -84,7 +84,7 @@ func (s *SummaryCache) OnInboundRelationshipChange(ctx context.Context, schema *
 		for rel := range cb {
 			if rel.Kind == kind &&
 				rel.APIVersion == apiVersion &&
-				rel.Namespace == namespace {
+				(namespace == "" || namespace == rel.Namespace) {
 				ret <- rel
 			}
 		}
@@ -98,7 +98,7 @@ func (s *SummaryCache) OnInboundRelationshipChange(ctx context.Context, schema *
 		delete(s.cbs, id)
 	}()
 
-	return cb
+	return ret
 }
 
 func (s *SummaryCache) SummaryAndRelationship(obj runtime.Object) (*summary.SummarizedObject, []Relationship) {
