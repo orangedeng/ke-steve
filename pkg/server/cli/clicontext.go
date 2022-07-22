@@ -14,11 +14,12 @@ import (
 )
 
 type Config struct {
-	KubeConfig      string
-	Context         string
-	HTTPSListenPort int
-	HTTPListenPort  int
-	UIPath          string
+	KubeConfig            string
+	Context               string
+	HTTPSListenPort       int
+	HTTPListenPort        int
+	UIPath                string
+	InsecureSkipTLSVerify bool
 
 	WebhookConfig authcli.WebhookConfig
 }
@@ -41,6 +42,13 @@ func (c *Config) ToServer(ctx context.Context) (*server.Server, error) {
 		return nil, err
 	}
 	restConfig.RateLimiter = ratelimit.None
+
+	// K-EXPLORER
+	restConfig.Insecure = c.InsecureSkipTLSVerify
+	if restConfig.Insecure {
+		restConfig.CAData = nil
+		restConfig.CAFile = ""
+	}
 
 	if c.WebhookConfig.WebhookAuthentication {
 		auth, err = c.WebhookConfig.WebhookMiddleware()
@@ -83,6 +91,10 @@ func Flags(config *Config) []cli.Flag {
 			Name:        "http-listen-port",
 			Value:       9080,
 			Destination: &config.HTTPListenPort,
+		},
+		cli.BoolFlag{
+			Name:        "insecure-skip-tls-verify",
+			Destination: &config.InsecureSkipTLSVerify,
 		},
 	}
 
