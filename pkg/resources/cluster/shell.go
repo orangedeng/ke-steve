@@ -42,7 +42,8 @@ func (s *shell) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 		defer cancel()
-		_ = client.CoreV1().Pods(pod.Namespace).Delete(ctx, pod.Name, metav1.DeleteOptions{})
+		client.CoreV1().Pods(pod.Namespace).Delete(ctx, pod.Name, metav1.DeleteOptions{})
+		s.impersonator.DeleteRole(ctx, *pod)
 	}()
 	s.proxyRequest(rw, req, pod, client)
 }
