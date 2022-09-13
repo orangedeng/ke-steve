@@ -160,16 +160,18 @@ func (p *Factory) TableAdminClientForWatch(ctx *types.APIRequest, s *types.APISc
 }
 
 func setupConfig(ctx *types.APIRequest, cfg *rest.Config, impersonate bool) (*rest.Config, error) {
+	cfg = rest.CopyConfig(cfg)
 	if impersonate {
 		user, ok := request.UserFrom(ctx.Context())
 		if !ok {
 			return nil, fmt.Errorf("user not found for impersonation")
 		}
-		cfg = rest.CopyConfig(cfg)
 		cfg.Impersonate.UserName = user.GetName()
 		cfg.Impersonate.Groups = user.GetGroups()
 		cfg.Impersonate.Extra = user.GetExtra()
 	}
+
+	cfg.WarningHandler = APIWarnings{ctx.Response}
 	return cfg, nil
 }
 
