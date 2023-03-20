@@ -28,7 +28,7 @@ var (
 )
 
 const (
-	shellPodImage = "rancher/shell:v0.1.18"
+	shellPodImage = "rancher/shell:v0.1.19"
 	shellPodNS    = "kube-system"
 )
 
