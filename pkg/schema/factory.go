@@ -1,6 +1,8 @@
 package schema
 
+//go:generate mockgen --build_flags=--mod=mod -package fake -destination fake/factory.go "github.com/rancher/steve/pkg/schema" Factory
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -9,8 +11,17 @@ import (
 	"github.com/rancher/apiserver/pkg/types"
 	"github.com/rancher/steve/pkg/accesscontrol"
 	"github.com/rancher/steve/pkg/attributes"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apiserver/pkg/authentication/user"
 )
+
+type Factory interface {
+	Schemas(user user.Info) (*types.APISchemas, error)
+	ByGVR(gvr schema.GroupVersionResource) string
+	ByGVK(gvr schema.GroupVersionKind) string
+	OnChange(ctx context.Context, cb func())
+	AddTemplate(template ...Template)
+}
 
 func newSchemas() (*types.APISchemas, error) {
 	apiSchemas := types.EmptyAPISchemas()
@@ -41,11 +52,11 @@ func (c *Collection) Schemas(user user.Info) (*types.APISchemas, error) {
 func (c *Collection) removeOldRecords(access *accesscontrol.AccessSet, user user.Info) {
 	current, ok := c.userCache.Get(user.GetName())
 	if ok {
-		currentId, cOk := current.(string)
-		if cOk && currentId != access.ID {
+		currentID, cOk := current.(string)
+		if cOk && currentID != access.ID {
 			// we only want to keep around one record per user. If our current access record is invalid, purge the
 			//record of it from the cache, so we don't keep duplicates
-			c.purgeUserRecords(currentId)
+			c.purgeUserRecords(currentID)
 			c.userCache.Remove(user.GetName())
 		}
 	}
