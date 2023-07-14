@@ -522,6 +522,12 @@ func (s *Store) Delete(apiOp *types.APIRequest, schema *types.APISchema, id stri
 		return nil, nil, nil
 	}
 
+	// K-EXPLORER
+	prop := metav1.DeletePropagationBackground
+	if opts.PropagationPolicy == nil {
+		opts.PropagationPolicy = &prop
+	}
+
 	buffer := WarningBuffer{}
 	k8sClient, err := metricsStore.Wrap(s.clientGetter.TableClient(apiOp, schema, apiOp.Namespace, &buffer))
 	if err != nil {
