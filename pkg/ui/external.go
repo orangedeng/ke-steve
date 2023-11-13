@@ -1,4 +1,4 @@
-// +build !embed
+//go:build !embed
 
 package ui
 
